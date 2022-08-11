@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:medical_app/home_screen.dart';
 import 'package:medical_app/medical_home_screen.dart';
 import 'package:medical_app/sizeDevide.dart';
 import 'package:firebase_core/firebase_core.dart';

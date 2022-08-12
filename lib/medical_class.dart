@@ -243,7 +243,7 @@ class Medical {
 
   // Thiết lập trạng thái state  thay đổi
   void setChangeStatus() {
-    if (this.checkCurrentGlucose) {
+    if (!this.checkCurrentGlucose) {
       this._content_display = "";
       if (_initialStateBool) {
         this._content_display = "${nInsulinAllTime} \n";
@@ -338,6 +338,7 @@ class Medical {
       final snapshot = await refer.child(s).get();
       if (snapshot.exists) {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
+        this.timeNext = value["timeNext"];
         this.isVisibleButtonNext = value["isVisibleButtonNext"];
         this.isVisibleGlucose = value["isVisibleGlucose"];
         this.isVisibleYesNoo = value["isVisibleYesNoo"];
@@ -383,8 +384,7 @@ class Medical {
 
   // kiểm tra phương án đã hiển thị
   bool checkDoneTask = false;
-  void setChangeCheckDoneTask() =>
-      this.checkCurrentGlucose = !this.checkCurrentGlucose;
+  void setChangeCheckDoneTask() => this.checkDoneTask = !this.checkDoneTask;
 
   // change display checkCurrentGlucose
   void setChangeCheckCurrentGlucose() =>
@@ -408,19 +408,31 @@ class Medical {
     return false;
   }
 
-  void timeNextCurrentState() {
+  String timeNext = '6:00_6:30';
+
+  //in ra khoảng thời gian hợp lệ hiện tại
+  void timeCurrentValid() {
     if (getCheckOpenCloseTimeStatus('6:00', '6:30')) {
-      this._content_display =
-          "Bạn phải đợi đến 12h trưa để đo đường máu mao mạch";
+      this.timeNext = '6:00_6:30';
     } else if (getCheckOpenCloseTimeStatus('12:00', '12:30')) {
-      this._content_display =
-          "Bạn phải đợi đến 6h tối để đo đường máu mao mạch";
+      this.timeNext = '12:00_12:30';
     } else if (getCheckOpenCloseTimeStatus('18:00', '18:30')) {
-      this._content_display =
-          "Bạn phải đợi đến 10h tối để đo đường máu mao mạch";
+      this.timeNext = '18:00_18:30';
     } else {
-      this._content_display =
-          "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch";
+      this.timeNext = '22:00_22:30';
+    }
+  }
+
+  // in ra thời gian theo dõi hợp lệ tiếp theo
+  void timeNextValid() {
+    if (getCheckOpenCloseTimeStatus('6:00', '6:30')) {
+      this.timeNext = '12:00_12:30';
+    } else if (getCheckOpenCloseTimeStatus('12:00', '12:30')) {
+      this.timeNext = '18:00_18:30';
+    } else if (getCheckOpenCloseTimeStatus('18:00', '18:30')) {
+      this.timeNext = '22:00_22:30';
+    } else {
+      this.timeNext = '6:00_6:30';
     }
   }
 

@@ -499,7 +499,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                             .numberWithOptions(decimal: true),
                                         inputFormatters: [
                                           FilteringTextInputFormatter.allow(
-                                              RegExp('[0-9]')),
+                                              RegExp('[0-9.]')),
                                         ],
                                         decoration: const InputDecoration(
                                           counter: Offstage(),
@@ -511,18 +511,18 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                         },
                                       ),
                                     ),
-                                    GestureDetector(
-                                      onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  HistoryScreen(
-                                                      medical: medicalObject))),
-                                      child: const Icon(
-                                        Icons.history,
-                                        size: 30,
-                                      ),
-                                    ),
+                                    // GestureDetector(
+                                    //   onTap: () => Navigator.push(
+                                    //       context,
+                                    //       MaterialPageRoute(
+                                    //           builder: (context) =>
+                                    //               HistoryScreen(
+                                    //                   medical: medicalObject))),
+                                    //   child: const Icon(
+                                    //     Icons.history,
+                                    //     size: 30,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                               ],
@@ -649,21 +649,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
               child: const Text('Yes'),
               onPressed: () {
                 setState(() {
-                  if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
-                      medicalObject.getInitialStateBool) {
-                    this._logicStateInfomation(value);
-                  } else {
-                    setState(() {
-                      medicalObject
-                          .setChangeVisibleGlucose(); // ẩn thanh nhập Glucose = false
-                      medicalObject
-                          .setChangeVisibleWeight(); // hiện thanh nhập Cân nặng = True
-                      medicalObject
-                          .setChangeCheckCurrentGlucose(); // qua bước nhập = false
-
-                      medicalObject.setChangeStatus(); // thay đổi trạng thái
-                    });
-                  }
+                  this._logicStateInfomation(value);
                 });
                 Navigator.of(context).pop();
               },
@@ -722,25 +708,49 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
 
   // xử lý logic
   Future<void> _logicStateInfomation(String value) async {
-    setState(() {
-      medicalObject.addItemListResultInjectionItem(
-          value); // double.parse(value.toString())
-      Future.delayed(
-          const Duration(seconds: 1),
-          (() => showToast(
-              "Lượng Glucose $value ${medicalObject.getCheckGlucozo(double.parse(value.toString())) == 0 ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
-              duration: 3,
-              gravity: Toast.bottom)));
+    medicalObject
+        .addItemListResultInjectionItem(value); // lưa kết quả đo Glucose
+    if (medicalObject.getCountInject() >= 4 &&
+        medicalObject.getCheckPassInjection() == 0) {
+      if (medicalObject.getInitialStateBool) {
+        medicalObject.setInitialStateBool = false;
+      } else {
+        medicalObject.setLastStateBool = true;
+      }
+    }
+    if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
+        medicalObject.getInitialStateBool) {
+      setState(() {
+        // double.parse(value.toString())
 
-      medicalObject
-          .setChangeCheckCurrentGlucose(); // nhập xong hiện phác đồ // = flase
-      medicalObject.setChangeVisibleButtonNext(); // hiện lại nút next // flase
-      medicalObject.setChangeVisibleGlucose(); //  ẩn thanh nhập // flase
-      medicalObject.setChangeStatus(); // thay đổi trạng thái
-      medicalObject.setChangeCheckDoneTask(); // đã hiện phác đồ // true
-      medicalObject.timeNextValid();
-      print("timeNext = ${medicalObject.timeNext}");
-    });
+        medicalObject
+            .setChangeCheckCurrentGlucose(); // nhập xong hiện phác đồ // = flase
+        medicalObject
+            .setChangeVisibleButtonNext(); // hiện lại nút next // flase
+        medicalObject
+            .setChangeVisibleGlucose(); //  ẩn thanh nhập Glucose // flase
+        medicalObject.setChangeStatus(); // thay đổi trạng thái
+        medicalObject.setChangeCheckDoneTask(); // đã hiện phác đồ // true
+        medicalObject.timeNextValid();
+        print("timeNext = ${medicalObject.timeNext}");
+      });
+    } else {
+      setState(() {
+        medicalObject
+            .setChangeVisibleGlucose(); // ẩn thanh nhập Glucose = false
+        medicalObject
+            .setChangeVisibleWeight(); // hiện thanh nhập Cân nặng = True
+        medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập = false
+
+        medicalObject.setChangeStatus(); // thay đổi trạng thái
+      });
+    }
+    Future.delayed(
+        const Duration(seconds: 1),
+        (() => showToast(
+            "Lượng Glucose $value ${medicalObject.getCheckGlucozo(double.parse(value.toString())) == 0 ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
+            duration: 3,
+            gravity: Toast.bottom)));
   }
 }
 

@@ -28,9 +28,9 @@ class Medical {
     + Loại Insulin: Lantus
 """;
   get getYInsu22H => this.yInsu22H;
-  void setYInsu22H(double value1, [double value2 = 0]) => this.yInsu22H = """ 
+  void setYInsu22H(double value1) => this.yInsu22H = """ 
 - Tiêm dưới da insulin tác dụng chậm :
-    + Liều khởi đầu: ${value1 * 0.2 + value2} UI/kg/ngày 
+    + Liều khởi đầu: ${num.parse((this._lastStateBool ? (value1 * 0.2 + 2) : (value1 * 0.2)).toStringAsFixed(4))} UI/kg/ngày 
     + Loại Insulin: Lantus
 """;
 
@@ -230,13 +230,13 @@ class Medical {
     for (var i = 0; i < getCountInject(); i++) {
       !getItemCheckFlag(i) ? count++ : null;
       if (count >= 5) {
-        return 0;
+        return 0; // không đạt mục tiêu
       }
     }
     if (getCountInject() - count >= 4) {
-      return 1;
+      return 1; // đạt mục tiêu
     }
-    return -1;
+    return -1; // chưa xác định
   }
 
   String oldDisplayContent = "Đây là phương án đầu tiên";
@@ -253,7 +253,7 @@ class Medical {
       if (getCheckOpenCloseTimeStatus("6:00", "6:30")) {
         if (this.checkDoneTask) {
           this._content_display =
-              "Bạn phải đợi đến 12h trưa để đo đường máu mao mạch";
+              "Bạn phải đợi đến 12h để đo đường máu mao mạch";
         } else {
           this._content_display += " ${glucose_infusion_6H12H22H} ";
           if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
@@ -266,11 +266,11 @@ class Medical {
         }
       } else if (getCheckOpenCloseTimeStatus("6:31", "11:59")) {
         this._content_display =
-            "Bạn phải đợi đến 12h trưa để đo đường máu mao mạch";
+            "Bạn phải đợi đến 12h  để đo đường máu mao mạch";
       } else if (getCheckOpenCloseTimeStatus("12:00", "12:30")) {
         if (this.checkDoneTask) {
           this._content_display =
-              "Bạn phải đợi đến 6h tối để đo đường máu mao mạch";
+              "Bạn phải đợi đến 18h để đo đường máu mao mạch";
         } else {
           this._content_display += "${glucose_infusion_6H12H22H}";
           if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
@@ -282,12 +282,11 @@ class Medical {
           }
         }
       } else if (getCheckOpenCloseTimeStatus("12:31", "17:59")) {
-        this._content_display =
-            "Bạn phải đợi đến 6h tối để đo đường máu mao mạch";
+        this._content_display = "Bạn phải đợi đến 18h để đo đường máu mao mạch";
       } else if (getCheckOpenCloseTimeStatus("18:00", "18:30")) {
         if (this.checkDoneTask) {
           this._content_display =
-              "Bạn phải đợi đến 10h tối để đo đường máu mao mạch";
+              "Bạn phải đợi đến 22h để đo đường máu mao mạch";
         } else {
           if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
             this._setSloveFailedContext(2);
@@ -297,12 +296,11 @@ class Medical {
             this._content_display += this.sloveFailedContext;
           } else {
             this._content_display =
-                "Bạn phải đợi đến 10h tối để đo đường máu mao mạch";
+                "Bạn phải đợi đến 22h để đo đường máu mao mạch";
           }
         }
       } else if (getCheckOpenCloseTimeStatus("18:31", "21:59")) {
-        this._content_display =
-            "Bạn phải đợi đến 10h tối để đo đường máu mao mạch";
+        this._content_display = "Bạn phải đợi đến 22h để đo đường máu mao mạch";
       } else if (getCheckOpenCloseTimeStatus("22:00", "22:30")) {
         if (this.checkDoneTask) {
           this._content_display =

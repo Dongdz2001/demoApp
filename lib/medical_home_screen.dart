@@ -26,6 +26,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Medical medicalObject = Medical();
   // late AppLifecycleState _lastLifecycleState;
   final TextEditingController _editingController = TextEditingController();
+  final TextEditingController _enterWeightController = TextEditingController();
   // get instancr firebase database
   final reference = FirebaseDatabase.instance.ref("Medicals/medical");
   @override
@@ -66,6 +67,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "checkCurrentGlucose": medicalObject.checkCurrentGlucose,
         "checkDoneTask": medicalObject.checkDoneTask,
         "timeNext": medicalObject.timeNext,
+        "isVisibleWeight": medicalObject.isVisibleWeight,
         //  "address": {"line1": "100 Mountain View"}
       });
     }
@@ -416,36 +418,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                 },
                                 child: const Text('Chuyển tiếp >>>')),
                           ),
-                          // Nút hoàn thành phương án
-                          // Visibility(
-                          //   visible: medicalObject.checkDoneTask,
-                          //   child: ElevatedButton(
-                          //       onPressed: () {
-                          //         if (medicalObject
-                          //             .checkValidMeasuringTimeFocus()) {
-                          //           if (!medicalObject.checkDoneTask) {
-                          //             setState(() {
-                          //               medicalObject
-                          //                   .setChangeVisibleButtonNext(); // ẩn nút
-                          //               medicalObject
-                          //                   .setChangeVisibleGlucose(); // hiện nhập glucose
-                          //             });
-                          //           } else {
-                          //             showToast("Chưa đến giờ đo",
-                          //                 duration: 3, gravity: Toast.bottom);
-                          //           }
-                          //         } else {
-                          //           medicalObject.checkDoneTask = false;
-                          //           showToast("Chưa đến giờ đo",
-                          //               duration: 3, gravity: Toast.bottom);
-                          //         }
-                          //         setState(() {
-                          //           medicalObject.setChangeStatus();
-                          //         });
-                          //       },
-                          //       child: const Text('Hoàn Thành >>>')),
-                          // ),
 
+                          // Hiện nhập glucose
                           Visibility(
                             visible: medicalObject.isVisibleGlucose,
                             child: Column(
@@ -479,6 +453,61 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                         onSubmitted: (value) {
                                           _editingController.text = '';
                                           _showDialogInputGlucose(value);
+                                        },
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  HistoryScreen(
+                                                      medical: medicalObject))),
+                                      child: const Icon(
+                                        Icons.history,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Hiện nhập Cân nặng hiện tại
+                          Visibility(
+                            visible: medicalObject.isVisibleWeight &&
+                                !medicalObject.getInitialStateBool,
+                            child: Column(
+                              children: [
+                                SizedBox(width: widthDevideMethod(0.05)),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      ' Nhập cân nặng(Kg) : ',
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                    SizedBox(
+                                      width: 80,
+                                      height: 40,
+                                      child: TextField(
+                                        controller: _enterWeightController,
+                                        maxLength: 5,
+                                        enableSuggestions: false,
+                                        autocorrect: false,
+                                        keyboardType: const TextInputType
+                                            .numberWithOptions(decimal: true),
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                              RegExp('[0-9]')),
+                                        ],
+                                        decoration: const InputDecoration(
+                                          counter: Offstage(),
+                                        ),
+                                        style: const TextStyle(fontSize: 20),
+                                        onSubmitted: (value) {
+                                          _editingController.text = '';
+                                          _showDialogInputWeight(value);
                                         },
                                       ),
                                     ),
@@ -593,7 +622,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     );
   }
 
-  //  verifyle kết quả  đo
+  //  verifyle kết quả  đo GLucose
   Future<void> _showDialogInputGlucose(String value) async {
     return showDialog<void>(
       context: context,
@@ -620,7 +649,67 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
               child: const Text('Yes'),
               onPressed: () {
                 setState(() {
-                  this._logicStateInfomation(value);
+                  if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
+                      medicalObject.getInitialStateBool) {
+                    this._logicStateInfomation(value);
+                  } else {
+                    setState(() {
+                      medicalObject
+                          .setChangeVisibleGlucose(); // ẩn thanh nhập Glucose = false
+                      medicalObject
+                          .setChangeVisibleWeight(); // hiện thanh nhập Cân nặng = True
+                      medicalObject
+                          .setChangeCheckCurrentGlucose(); // qua bước nhập = false
+
+                      medicalObject.setChangeStatus(); // thay đổi trạng thái
+                    });
+                  }
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //  verifyle kết quả  đo Cân Nặng
+  Future<void> _showDialogInputWeight(String value) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cân nặng hiện tại'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Giá trị bạn nhập vào là ${value}'),
+                Text('nhấn "Yes" để xác nhận chính xác hoặc "No" để nhập lại'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                setState(() {
+                  medicalObject
+                      .setChangeVisibleWeight(); // ẩn thanh nhập cân nặng = false
+                  medicalObject
+                      .setYInsu22H(double.parse(value)); // thay đổi liểu UI
+                  medicalObject
+                      .setChangeVisibleButtonNext(); // hiện nút chuyển tiếp = true
+                  medicalObject.setChangeStatus(); // thay đổi trạng thái
+                  medicalObject.setChangeCheckDoneTask(); // done task = true
+                  medicalObject.timeNextValid(); // dỏne
                 });
                 Navigator.of(context).pop();
               },

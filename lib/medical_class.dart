@@ -28,9 +28,9 @@ class Medical {
     + Loại Insulin: Lantus
 """;
   get getYInsu22H => this.yInsu22H;
-  void setYInsu22H(double value) => this.yInsu22H = """ 
+  void setYInsu22H(double value1, [double value2 = 0]) => this.yInsu22H = """ 
 - Tiêm dưới da insulin tác dụng chậm :
-    + Liều khởi đầu: ${value} UI/kg/ngày 
+    + Liều khởi đầu: ${value1 * 0.2 + value2} UI/kg/ngày 
     + Loại Insulin: Lantus
 """;
 
@@ -203,6 +203,8 @@ class Medical {
     if (getCountUsedSolve == 1) {
       downCountUsedSolve();
     }
+    // ẩn hiện thanh nhập cân nặng
+    bool isVisibleWeight = false;
     // phương án đề xuất đã hiện hay chưa
     this.checkDoneTask = false;
     // lựa chọn phương án ban đầu
@@ -306,18 +308,22 @@ class Medical {
           this._content_display =
               "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch";
         } else {
-          if (!_initialStateBool) {
-            this._content_display +=
-                " ${glucose_infusion_6H12H22H} ${yInsu22H}";
+          if (this.isVisibleWeight) {
+            this._content_display = "Nhập cân nặng hiện tại (Kg)";
           } else {
-            this._content_display += " ${glucose_infusion_6H12H22H}";
-          }
-          if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
-            this._setSloveFailedContext(2);
-            this._content_display += this.sloveFailedContext;
-          } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
-            this._setSloveFailedContext(4);
-            this._content_display += this.sloveFailedContext;
+            if (!_initialStateBool) {
+              this._content_display +=
+                  " ${glucose_infusion_6H12H22H} ${yInsu22H}";
+            } else {
+              this._content_display += " ${glucose_infusion_6H12H22H}";
+            }
+            if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
+              this._setSloveFailedContext(2);
+              this._content_display += this.sloveFailedContext;
+            } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
+              this._setSloveFailedContext(4);
+              this._content_display += this.sloveFailedContext;
+            }
           }
         }
       } else {
@@ -338,6 +344,7 @@ class Medical {
       final snapshot = await refer.child(s).get();
       if (snapshot.exists) {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
+        this.isVisibleWeight = value["isVisibleWeight"];
         this.timeNext = value["timeNext"];
         this.isVisibleButtonNext = value["isVisibleButtonNext"];
         this.isVisibleGlucose = value["isVisibleGlucose"];
@@ -408,6 +415,7 @@ class Medical {
     return false;
   }
 
+  // Time next check
   String timeNext = '6:00_6:30';
 
   //in ra khoảng thời gian hợp lệ hiện tại
@@ -435,6 +443,10 @@ class Medical {
       this.timeNext = '6:00_6:30';
     }
   }
+
+  // Hiện đo cân nặng
+  bool isVisibleWeight = false;
+  void setChangeVisibleWeight() => this.isVisibleWeight = !this.isVisibleWeight;
 
   // toJSONEncodable() {
   //   Map<String, dynamic> subthis = new Map();

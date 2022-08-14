@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:async/async.dart';
+import 'package:intl/intl.dart';
 import 'package:medical_app/controller_time.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -342,6 +343,7 @@ class Medical {
       final snapshot = await refer.child(s).get();
       if (snapshot.exists) {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
+        this.timeNext = value["timeNextDay"];
         this.isVisibleWeight = value["isVisibleWeight"];
         this.timeNext = value["timeNext"];
         this.isVisibleButtonNext = value["isVisibleButtonNext"];
@@ -446,26 +448,23 @@ class Medical {
   bool isVisibleWeight = false;
   void setChangeVisibleWeight() => this.isVisibleWeight = !this.isVisibleWeight;
 
-  // toJSONEncodable() {
-  //   Map<String, dynamic> subthis = new Map();
-  //   subthis['content_display'] = this._content_display;
-  //   subthis['namePD'] = this.namePD;
-  //   subthis['initialStateBool'] = this._initialStateBool;
-  //   subthis['listResultInjection'] = this._listResultInjection;
-  //   subthis['listTimeResultInjection'] = this._listTimeResultInjection;
-  //   subthis['lastStateBool'] = this._lastStateBool;
-  //   subthis['countUsedSolve'] = this.countUsedSolve;
-  //   subthis['isVisibleGlucose'] = this.isVisibleGlucose;
-  //   subthis['isVisibleYesNoo'] = this.isVisibleYesNoo;
-  // }
+  // Ngày tiếp theo
+  String timeNextDay =
+      DateFormat('dd-MM-yyyy').format(DateTime.now()); //14-08-2022
+
+  // lấy ra ngày hiện tại
+  String gettimeCurentDay() =>
+      DateFormat('dd-MM-yyyy').format(DateTime.now()); // 14-08-2022
+  void updateTimeNextDay() {
+    DateTime now = DateTime.now();
+    DateFormat formatter = DateFormat('dd-MM-yyyy');
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    String formatted_tomorrow = formatter.format(tomorrow);
+    timeNextDay = formatted_tomorrow;
+  } //  15-08-2022
+
+  // check time hiện tại  có bằng  timeNextDay hay không;
+  bool checkTimeNextDay() => this.gettimeCurentDay() == timeNextDay;
+  // List trạng thái theo dõi phác đồ
+  List<int> listHistory = [];
 }
-
-// class MedicalList {
-//   List<Medical> items = [];
-
-//   toJSONEncodable() {
-//     return items.map((item) {
-//       return item.toJSONEncodable();
-//     }).toList();
-//   }
-// }

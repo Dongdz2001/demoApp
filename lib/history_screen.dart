@@ -31,28 +31,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Text('Thông tin chi tiết:'),
             Expanded(
               child: ListView.builder(
-                itemCount: widget.medical.getCountInject(),
+                itemCount: widget.medical.lengthListHistoryInjection(),
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    height: heightDevideMethod(0.04),
+                    height: heightDevideMethod(0.06),
                     child: ListTile(
                       title: Text(
-                        'Lần tiêm ${index + 1} : ${widget.medical.getItemListResultInjection(index)} - ${widget.medical.getCheckGlucozoIndex(index) ? "Đạt mục tiêu" : "  Không đạt"} ',
+                        '${widget.medical.listHistoryTimeInjection[index]} : ${((widget.medical.listHistoryInjection[index] != -1) && (widget.medical.listHistoryInjection[index] != -2) && (widget.medical.listHistoryInjection[index] != -3)) ? ("Đường máu ${widget.medical.listHistoryInjection[index]} ${widget.medical.getCheckGlucozoIndex(index) ? "Đạt mục tiêu" : "  Không đạt"} ") : "\n"} ',
                         style: Theme.of(context).textTheme.headline2,
                       ),
-                      trailing: IconButton(
-                        icon: Icon(index == widget.medical.getCountInject() - 1
-                            ? Icons.restore
-                            : Icons.info_outline_rounded),
-                        tooltip: widget.medical.getTimeInjectItemList(index),
-                        onPressed: () {
-                          setState(() {
-                            index == widget.medical.getCountInject() - 1
-                                ? widget.medical.RemoveLastItemInjection()
-                                : null;
-                          });
-                        },
-                      ),
+                      // trailing: IconButton(
+                      //   icon: Icon(index == widget.medical.getCountInject() - 1
+                      //       ? Icons.restore
+                      //       : Icons.info_outline_rounded),
+                      //   tooltip: widget.medical.getTimeInjectItemList(index),
+                      //   onPressed: () {
+                      //     // setState(() {
+                      //     //   index == widget.medical.getCountInject() - 1
+                      //     //       ? widget.medical.RemoveLastItemInjection()
+                      //     //       : null;
+                      //     // });
+                      //   },
+                      // ),
                     ),
                   );
                 },

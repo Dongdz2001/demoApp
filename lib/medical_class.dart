@@ -75,13 +75,6 @@ class Medical {
   // check restart app
   bool flagRestart = true;
 
-  // số lần sử dụng 1 phương án
-  int countUsedSolve = 0;
-  get getCountUsedSolve => this.countUsedSolve;
-  set setCountUsedSolve(int i) => this.countUsedSolve = i;
-  void upCountUsedSolve() => this.countUsedSolve++;
-  void downCountUsedSolve() => this.countUsedSolve--;
-
   // Kiểm tra nồng độ Glucozo và in ra kết quả nếu failed
   void set_Content_State_Check_Gluco_Failed(double gluco) {
     if ((8.3 < gluco) && (gluco <= 11.1)) {
@@ -105,7 +98,21 @@ class Medical {
     -1.0,
     -1.0
   ];
+
   get getListResultInjection => this._listResultInjection;
+  // lấy ra list double data có giá trị
+  List<double> _getListResultInjectValidValue() {
+    List<double> listTemp = [];
+    for (var i = 0; i < this._listResultInjection.length; i++) {
+      if (this._listResultInjection[i] != -1) {
+        listTemp.add(this._listResultInjection[i]);
+      } else {
+        break;
+      }
+    }
+    return listTemp;
+  }
+
   set setListResultInjection(List<double> listTemp) =>
       this._listResultInjection = listTemp;
 
@@ -137,6 +144,19 @@ class Medical {
         break;
       }
     }
+  }
+
+  // lấy ra list String Time data có giá trị
+  List<String> _getListResultInjectTimeValidValue() {
+    List<String> listTemp = [];
+    for (var i = 0; i < this._listTimeResultInjection.length; i++) {
+      if (this._listTimeResultInjection[i] != "none") {
+        listTemp.add(this._listTimeResultInjection[i]);
+      } else {
+        break;
+      }
+    }
+    return listTemp;
   }
 
   // loại bỏ lần tiêm cuối trong danh sách
@@ -176,9 +196,9 @@ class Medical {
     return -1;
   }
 
-  // lấy ra thời gian tiêm
+  // lấy ra thời gian tiêm tại vị trí i
   String getTimeInjectItemList(int i) => _listTimeResultInjection[i];
-
+  // l
   bool getItemCheckFlag(int i) =>
       getCheckGlucozo(getItemListResultInjection(i)) == 0 ? true : false;
   int getCountInject() {
@@ -189,7 +209,7 @@ class Medical {
   }
 
   // Reset value default;
-  void resetInjectionValueDefault() {
+  void _resetInjectionValueDefault() {
     for (var i = 0; i < 8; i++) {
       this._listResultInjection[i] = -1;
       this._listTimeResultInjection[i] = "none";
@@ -198,12 +218,12 @@ class Medical {
 
   // reset all value
   void resetAllvalueIinitialStatedefaut() {
-    resetInjectionValueDefault();
+    _resetInjectionValueDefault();
+    this.listHistoryInjection = [];
+    this.listHistoryTimeInjection = [];
     this.timeStart = DateTime.now().toString().substring(0, 16);
     this.setYInsu22H(0.2);
-    if (getCountUsedSolve == 1) {
-      downCountUsedSolve();
-    }
+
     // Reset time hiện tại
     String timeNextDay = DateFormat('dd-MM-yyyy').format(DateTime.now());
     // ẩn hiện thanh nhập cân nặng
@@ -222,7 +242,6 @@ class Medical {
     this.isVisibleButtonNext = false;
     // kiểm tra xem đẫ qua bước nhập glucose hiện tại hay chưa
     this.checkCurrentGlucose = false;
-    this.countUsedSolve = 0;
     this.oldDisplayContent = "Đây là phương án đầu tiên";
     this._content_display = "Bạn có đang tiêm Insulin không :  ";
   }
@@ -345,6 +364,8 @@ class Medical {
       final snapshot = await refer.child(s).get();
       if (snapshot.exists) {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
+
+        // get value from firebase
         this.timeNextDay = value["timeNextDay"];
         this.isVisibleWeight = value["isVisibleWeight"];
         this.timeNext = value["timeNext"];
@@ -355,7 +376,6 @@ class Medical {
         this.checkDoneTask = value["checkDoneTask"];
         this.setInitialStateBool = value["initialStateBool"];
         this.setLastStateBool = value["lastStateBool"];
-        this.setCountUsedSolve = value["countUsedSolve"];
         this.setListResultInjection =
             (value["listResultInjection"] as List<dynamic>)
                 .map((e) => (e as int).toDouble())
@@ -369,6 +389,16 @@ class Medical {
         this.yInsu22H = value["yInsu22H"];
         this.oldDisplayContent = value["oldDisplayContent"];
         this.flagRestart = value["flagRestart"] ?? false;
+        this.listHistoryInjection =
+            (value["listHistoryInjection"] as List<dynamic>)
+                .map((e) => (e as int).toDouble())
+                .toList();
+        this.setListTimeResultInjection =
+            (value["listHistoryTimeInjection"] as List<dynamic>)
+                .map((e) => e.toString())
+                .toList();
+
+        // restart status
         this.flagRestart
             ? this._content_display = "Bạn có đang tiêm Insulin không :  "
             : setChangeStatus();
@@ -468,5 +498,27 @@ class Medical {
   // check time hiện tại  có bằng  timeNextDay hay không;
   bool checkTimeNextDay() => this.gettimeCurentDay() == timeNextDay;
   // List trạng thái theo dõi phác đồ
-  List<int> listHistory = [];
+  List<double> listHistoryInjection = [];
+  List<String> listHistoryTimeInjection = [];
+
+  // get length listHistoryInjection
+  int lengthListHistoryInjection() => this.listHistoryInjection.length;
+
+  // add data form listInject to history  Inject
+  void addDatatoListHistoryInjection() {
+    if (this._lastStateBool) {
+      listHistoryInjection.add(-3);
+      listHistoryTimeInjection.add("Phương án tăng liều LANTUS 2UI");
+    } else if (!this._initialStateBool) {
+      // this._initialStateBool = false là trạng thái tiêm insulin
+      listHistoryInjection.add(-2);
+      listHistoryTimeInjection.add("Phương án tiêm Insulin ");
+    } else {
+      listHistoryInjection.add(-1);
+      listHistoryTimeInjection.add("Phương án không tiêm Insulin");
+    }
+    listHistoryInjection.addAll(this._getListResultInjectValidValue());
+    listHistoryTimeInjection.addAll(this._getListResultInjectTimeValidValue());
+    this._resetInjectionValueDefault();
+  }
 }

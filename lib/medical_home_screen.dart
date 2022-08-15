@@ -54,9 +54,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "lastStateBool": medicalObject.getLastStateBool,
         "listResultInjection": medicalObject.getListResultInjection,
         "listTimeResultInjection": medicalObject.getListTimeResultInjection,
+        "listHistoryInjection": medicalObject.listHistoryInjection,
+        "listHistoryTimeInjection": medicalObject.listHistoryTimeInjection,
         "isVisibleGlucose": medicalObject.isVisibleGlucose,
         "isVisibleYesNoo": medicalObject.isVisibleYesNoo,
-        "countUsedSolve": medicalObject.getCountUsedSolve,
         "timeStart": medicalObject.getTimeStart.toString(),
         "sloveFailedContext": medicalObject.getSloveFailedContext,
         "yInsu22H": medicalObject.getYInsu22H,
@@ -229,8 +230,17 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                         color: Colors.grey[800],
                                         size: 40,
                                       ),
-                                      tooltip: medicalObject.oldDisplayContent,
-                                      onPressed: () {},
+                                      tooltip:
+                                          "history", //medicalObject.oldDisplayContent
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    HistoryScreen(
+                                                        medical:
+                                                            medicalObject)));
+                                      },
                                     )),
                                 Positioned(
                                   top: 120,
@@ -461,18 +471,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                           _editingController.text = '';
                                           _showDialogInputGlucose(value);
                                         },
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  HistoryScreen(
-                                                      medical: medicalObject))),
-                                      child: const Icon(
-                                        Icons.history,
-                                        size: 30,
                                       ),
                                     ),
                                   ],
@@ -726,6 +724,9 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
       } else {
         medicalObject.setLastStateBool = true; //  chuyển phương án cuối
       }
+
+      // add data vào list history và xóa lịch sử đo
+      medicalObject.addDatatoListHistoryInjection();
       // kiểm tra xem có thất bại lúc 22h không để chờ 1 ngày
       if (getCheckOpenCloseTimeStatus('22:00', '22:30')) {
         medicalObject.updateTimeNextDay();

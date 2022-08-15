@@ -407,7 +407,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                           }
                                         }
                                       } else {
-                                        showToast("Chưa đến giờ đo ",
+                                        showToast("Chưa đến giờ đo hihi",
                                             duration: 3, gravity: Toast.bottom);
                                       }
                                     } else {
@@ -732,7 +732,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         medicalObject.setContentdisplay =
             "Bạn phải đợi đến 22h ( ${medicalObject.timeNextDay} ) để đo đường máu mao mạch";
         medicalObject
-            .setChangeVisibleButtonNext(); // hiện lại nút next // flase
+            .setChangeVisibleButtonNext(); // hiện lại nút next // = flase
+        medicalObject
+            .setChangeVisibleGlucose(); // ẩn thanh nhập glucose // = false
+        medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập =true
       }
     }
     // kiểm tra xem đúng  ngày không

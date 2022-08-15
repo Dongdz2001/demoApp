@@ -204,6 +204,8 @@ class Medical {
     if (getCountUsedSolve == 1) {
       downCountUsedSolve();
     }
+    // Reset time hiện tại
+    String timeNextDay = DateFormat('dd-MM-yyyy').format(DateTime.now());
     // ẩn hiện thanh nhập cân nặng
     bool isVisibleWeight = false;
     // phương án đề xuất đã hiện hay chưa
@@ -327,7 +329,7 @@ class Medical {
         }
       } else {
         this._content_display =
-            "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch";
+            "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch ";
       }
     } else {
       this._content_display = "Theo dõi đường máu mao mạch";
@@ -343,7 +345,7 @@ class Medical {
       final snapshot = await refer.child(s).get();
       if (snapshot.exists) {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
-        this.timeNext = value["timeNextDay"];
+        this.timeNextDay = value["timeNextDay"];
         this.isVisibleWeight = value["isVisibleWeight"];
         this.timeNext = value["timeNext"];
         this.isVisibleButtonNext = value["isVisibleButtonNext"];
@@ -448,7 +450,7 @@ class Medical {
   bool isVisibleWeight = false;
   void setChangeVisibleWeight() => this.isVisibleWeight = !this.isVisibleWeight;
 
-  // Ngày tiếp theo
+  // Ngày tiếp theo (mặc định ngày hiện tại)
   String timeNextDay =
       DateFormat('dd-MM-yyyy').format(DateTime.now()); //14-08-2022
 

@@ -18,7 +18,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         title: const Text('Lịch sử theo dõi'),
       ),
       body: Container(
-        padding: EdgeInsets.all(15),
+        padding: EdgeInsets.only(top: 15),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -33,26 +33,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: ListView.builder(
                 itemCount: widget.medical.lengthListHistoryInjection(),
                 itemBuilder: (context, index) {
-                  return SizedBox(
-                    height: heightDevideMethod(0.06),
-                    child: ListTile(
-                      title: Text(
-                        '${widget.medical.listHistoryTimeInjection[index]} : ${((widget.medical.listHistoryInjection[index] != -1) && (widget.medical.listHistoryInjection[index] != -2) && (widget.medical.listHistoryInjection[index] != -3)) ? ("Đường máu ${widget.medical.listHistoryInjection[index]} ${widget.medical.getCheckGlucozoIndex(index) ? "Đạt mục tiêu" : "  Không đạt"} ") : "\n"} ',
-                        style: Theme.of(context).textTheme.headline2,
-                      ),
-                      // trailing: IconButton(
-                      //   icon: Icon(index == widget.medical.getCountInject() - 1
-                      //       ? Icons.restore
-                      //       : Icons.info_outline_rounded),
-                      //   tooltip: widget.medical.getTimeInjectItemList(index),
-                      //   onPressed: () {
-                      //     // setState(() {
-                      //     //   index == widget.medical.getCountInject() - 1
-                      //     //       ? widget.medical.RemoveLastItemInjection()
-                      //     //       : null;
-                      //     // });
-                      //   },
-                      // ),
+                  return Container(
+                    padding: EdgeInsets.only(left: 20),
+                    child: Text(
+                      ((widget.medical.listHistoryInjection[index] != -1) &&
+                              (widget.medical.listHistoryInjection[index] !=
+                                  -2) &&
+                              (widget.medical.listHistoryInjection[index] !=
+                                  -3))
+                          ? "${widget.medical.listHistoryTimeInjection[index]} : glucose ${widget.medical.listHistoryInjection[index]} (mol/l) \n ${widget.medical.listOldSolveHistory[index]}  --------------------------------------------------------- " //${widget.medical.getCheckGlucozoIndex(index) ? " mục tiêu " : " Không đạt "}
+                          : "${widget.medical.listHistoryTimeInjection[index]} : \n ",
+                      style: Theme.of(context).textTheme.headline2,
                     ),
                   );
                 },

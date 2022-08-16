@@ -61,7 +61,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "timeStart": medicalObject.getTimeStart.toString(),
         "sloveFailedContext": medicalObject.getSloveFailedContext,
         "yInsu22H": medicalObject.getYInsu22H,
-        "oldDisplayContent": medicalObject.oldDisplayContent,
         "flagRestart": medicalObject.flagRestart,
         "isVisibleButtonNext": medicalObject.isVisibleButtonNext,
         "checkCurrentGlucose": medicalObject.checkCurrentGlucose,
@@ -70,6 +69,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "timeNext": medicalObject.timeNext,
         "isVisibleWeight": medicalObject.isVisibleWeight,
         "timeNextDay": medicalObject.timeNextDay,
+        "listHistoryInjection": medicalObject.listHistoryInjection,
         //  "address": {"line1": "100 Mountain View"}
       });
     }
@@ -230,8 +230,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                         color: Colors.grey[800],
                                         size: 40,
                                       ),
-                                      tooltip:
-                                          "history", //medicalObject.oldDisplayContent
+                                      tooltip: "history",
                                       onPressed: () {
                                         Navigator.push(
                                             context,
@@ -516,18 +515,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                         },
                                       ),
                                     ),
-                                    // GestureDetector(
-                                    //   onTap: () => Navigator.push(
-                                    //       context,
-                                    //       MaterialPageRoute(
-                                    //           builder: (context) =>
-                                    //               HistoryScreen(
-                                    //                   medical: medicalObject))),
-                                    //   child: const Icon(
-                                    //     Icons.history,
-                                    //     size: 30,
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
                               ],
@@ -715,7 +702,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Future<void> _logicStateInfomation(String value) async {
     medicalObject
         .addItemListResultInjectionItem(value); // add data  list  kết quả đo
-    medicalObject.addItemListHistory(value); // add data to history
     if (medicalObject.getCountInject() >= 4 &&
         medicalObject.getCheckPassInjection() == 0) {
       // chuyển đổi phương án
@@ -740,7 +726,11 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         medicalObject
             .setChangeVisibleGlucose(); // ẩn thanh nhập glucose // = false
         medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập =true
+      } else {
+        medicalObject.addItemListHistory(value);
       }
+    } else {
+      medicalObject.addItemListHistory(value); // add data to history
     }
     // kiểm tra xem đúng  ngày không
     if (medicalObject.checkTimeNextDay()) {
@@ -782,106 +772,3 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
             gravity: Toast.bottom)));
   }
 }
-
-//// Xử lý false khi không đạt yêu cầu
-
-// if (medicalObject.getCountInject() >= 4) {
-//     if (medicalObject.getCheckPassInjection() == 0) {
-//       // Trường hợp không tiêm Insulin không đạt mục tiêu
-//       if (medicalObject.getInitialStateBool) {
-//         // ko tiêm Insulin không đạt mục tiêu lần 1
-//         if (medicalObject.getCountUsedSolve == 0) {
-//           medicalObject.set_Content_State_Check_Gluco_Failed(
-//               medicalObject.getLastFaildedResultValue());
-//           medicalObject.setOldDisplayContent();
-//           medicalObject.setContentdisplay =
-//               """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
-
-//           medicalObject.upCountUsedSolve();
-//           medicalObject.resetInjectionValueDefault();
-//           Future.delayed(const Duration(seconds: 8), (() {
-//             setState(() {
-//               medicalObject.setChangeStatus();
-//             });
-//           }));
-//           // không tiêm Insulin không đạt mục tiêu lần 2
-//         } else if (medicalObject.getCountUsedSolve == 1) {
-//           medicalObject.setOldDisplayContent();
-//           medicalObject.setContentdisplay =
-//               "Phương án hiện tại không đạt yêu cầu \n chuyển sang 1 phương án khác !";
-//           medicalObject.downCountUsedSolve();
-//           medicalObject.setInitialStateBool =
-//               !medicalObject.getInitialStateBool;
-//           medicalObject.resetInjectionValueDefault();
-//           Future.delayed(const Duration(seconds: 8), (() {
-//             setState(() {
-//               medicalObject.setChangeStatus();
-//             });
-//           }));
-//         }
-//       } else {
-//         // Phương án tiêm insulin không đạt mục tiêu
-//         if (!medicalObject.getLastStateBool) {
-//           //  tiêm Insulin không đạt mục tiêu lần 1
-//           if (medicalObject.getCountUsedSolve == 0) {
-//             medicalObject.set_Content_State_Check_Gluco_Failed(
-//                 medicalObject.getLastFaildedResultValue());
-//             medicalObject.setOldDisplayContent();
-//             medicalObject.setContentdisplay =
-//                 """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
-//             medicalObject.upCountUsedSolve();
-//             medicalObject.resetInjectionValueDefault();
-//             Future.delayed(const Duration(seconds: 6), (() {
-//               setState(() {
-//                 medicalObject.setChangeStatus();
-//               });
-//             }));
-//           } else if (medicalObject.getCountUsedSolve == 1) {
-//             medicalObject.setOldDisplayContent();
-//             medicalObject.setContentdisplay =
-//                 "Phương án hiện tại không đạt yêu cầu \n cần tăng liều Lantus lên 2UI !";
-//             medicalObject.downCountUsedSolve();
-//             medicalObject.setYInsu22H(2);
-//             medicalObject.setLastStateBool = true;
-//             medicalObject.resetInjectionValueDefault();
-//             Future.delayed(const Duration(seconds: 6), (() {
-//               setState(() {
-//                 medicalObject.setChangeStatus();
-//               });
-//             }));
-//           }
-//         } else {
-//           // Phương án cuối cùng tăng liều 2UI Lantus
-//           if (medicalObject.getCountUsedSolve == 0) {
-//             medicalObject.upCountUsedSolve();
-//             medicalObject.set_Content_State_Check_Gluco_Failed(
-//                 medicalObject.getLastFaildedResultValue());
-//             medicalObject.setOldDisplayContent();
-//             medicalObject.setContentdisplay =
-//                 """Phương án hiện tại không đạt yêu cầu \n nên thêm ${medicalObject.getSloveFailedContext}""";
-//             medicalObject.resetInjectionValueDefault();
-//             Future.delayed(const Duration(seconds: 6), (() {
-//               setState(() {
-//                 medicalObject.setChangeStatus();
-//               });
-//             }));
-//           } else if (medicalObject.getCountUsedSolve == 1) {
-//             medicalObject.setOldDisplayContent();
-//             medicalObject.setContentdisplay =
-//                 "Phác đồ này không đạt hiểu quả \n hãy chuyển sang phác đồ \n TRUYỀN INSULIN BƠM TIÊM ĐIỆN ";
-//             // medicalObject.resetAllvalueIinitialStatedefaut();
-//           }
-//         }
-//       }
-//     } else if (medicalObject.getCheckPassInjection() == 1) {
-//       medicalObject.setOldDisplayContent();
-//       medicalObject.setContentdisplay =
-//           "Phương án này đang có hiệu quả tốt \n tiếp tục sử dụng phương án này nhé !";
-//       Future.delayed(const Duration(seconds: 6), (() {
-//         setState(() {
-//           medicalObject.setChangeStatus();
-//         });
-//       }));
-//       medicalObject.resetInjectionValueDefault();
-//     }
-//   }

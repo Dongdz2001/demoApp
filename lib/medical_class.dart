@@ -36,16 +36,16 @@ class Medical {
 """;
 
 // nội dung phương án bổ sung khi không đạt mục tiêu
-  String sloveFailedContext = "Tiêm dưới da Actrapid 2UI\n";
+  String sloveFailedContext = "-  Tiêm dưới da Actrapid 2UI";
   get getSloveFailedContext => this.sloveFailedContext;
   void _setSloveFailedContext(int value) =>
-      this.sloveFailedContext = "Tiêm dưới da Actrapid ${value} UI\n";
+      this.sloveFailedContext = "-  Tiêm dưới da Actrapid ${value} UI";
 
 // nội dung phương án cho không tiêm Insulin
   String nInsulinAllTime = "- Tạm ngừng các thuốc hạ đường máu ";
 
 // nội dung phương án cho không đạt mục tiêu ở phương án sử dụng trên
-  String upLatium = "Tăng liều lên 2UI";
+  String upLatium = "-  Tăng liều lên 2UI";
 
   // tên phác đồ
   String namePD = "Phác đồ hiện tại: \n NUÔI DƯỠNG ĐƯỜNG TĨNH MẠCH ";
@@ -221,9 +221,12 @@ class Medical {
     resetInjectionValueDefault();
     this.listHistoryInjection = [];
     this.listHistoryTimeInjection = [];
+    this.listOldSolveHistory = [];
     this.timeStart = DateTime.now().toString().substring(0, 16);
     this.setYInsu22H(0.2);
 
+    // blockState ve trang thai ban dau
+    _blockStateIitial = false;
     // Reset time hiện tại
     String timeNextDay = DateFormat('dd-MM-yyyy').format(DateTime.now());
     // ẩn hiện thanh nhập cân nặng
@@ -242,7 +245,7 @@ class Medical {
     this.isVisibleButtonNext = false;
     // kiểm tra xem đẫ qua bước nhập glucose hiện tại hay chưa
     this.checkCurrentGlucose = false;
-    this.oldDisplayContent = "Đây là phương án đầu tiên";
+
     this._content_display = "Bạn có đang tiêm Insulin không :  ";
   }
 
@@ -261,16 +264,15 @@ class Medical {
     return -1; // chưa xác định
   }
 
-  String oldDisplayContent = "Đây là phương án đầu tiên";
-  void setOldDisplayContent() => this.oldDisplayContent =
-      "Phương án trước đó: \n ${this._content_display}";
+  bool _blockStateIitial = false;
 
   // Thiết lập trạng thái state  thay đổi
   void setChangeStatus() {
     if (!this.checkCurrentGlucose) {
       this._content_display = "";
-      if (_initialStateBool) {
+      if (_initialStateBool || _blockStateIitial) {
         this._content_display = "${nInsulinAllTime} \n";
+        _blockStateIitial = true;
       }
       if (getCheckOpenCloseTimeStatus("6:00", "6:30")) {
         if (this.checkDoneTask) {
@@ -285,6 +287,7 @@ class Medical {
             this._setSloveFailedContext(4);
             this._content_display += this.sloveFailedContext;
           }
+          this._addOldSoloveHistory(this._content_display);
         }
       } else if (getCheckOpenCloseTimeStatus("6:31", "11:59")) {
         this._content_display =
@@ -302,6 +305,7 @@ class Medical {
             this._setSloveFailedContext(4);
             this._content_display += this.sloveFailedContext;
           }
+          this._addOldSoloveHistory(this._content_display);
         }
       } else if (getCheckOpenCloseTimeStatus("12:31", "17:59")) {
         this._content_display = "Bạn phải đợi đến 18h để đo đường máu mao mạch";
@@ -313,9 +317,11 @@ class Medical {
           if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
             this._setSloveFailedContext(2);
             this._content_display += this.sloveFailedContext;
+            this._addOldSoloveHistory(this._content_display);
           } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
             this._setSloveFailedContext(4);
             this._content_display += this.sloveFailedContext;
+            this._addOldSoloveHistory(this._content_display);
           } else {
             this._content_display =
                 "Bạn phải đợi đến 22h để đo đường máu mao mạch";
@@ -344,6 +350,7 @@ class Medical {
               this._setSloveFailedContext(4);
               this._content_display += this.sloveFailedContext;
             }
+            this._addOldSoloveHistory(this._content_display);
           }
         }
       } else {
@@ -387,15 +394,19 @@ class Medical {
         this.setTimeStart = value["timeStart"].toString();
         this.sloveFailedContext = value["sloveFailedContext"];
         this.yInsu22H = value["yInsu22H"];
-        this.oldDisplayContent = value["oldDisplayContent"];
+
         this.flagRestart = value["flagRestart"] ?? false;
         if (value["listHistoryInjection"] != null) {
           this.listHistoryInjection =
               (value["listHistoryInjection"] as List<dynamic>)
                   .map((e) => (e as int).toDouble())
                   .toList();
-          this.setListTimeResultInjection =
+          this.listHistoryTimeInjection =
               (value["listHistoryTimeInjection"] as List<dynamic>)
+                  .map((e) => e.toString())
+                  .toList();
+          this.listOldSolveHistory =
+              (value["listOldSolveHistory"] as List<dynamic>)
                   .map((e) => e.toString())
                   .toList();
         }
@@ -502,6 +513,17 @@ class Medical {
   // List trạng thái theo dõi phác đồ
   List<double> listHistoryInjection = [];
   List<String> listHistoryTimeInjection = [];
+  List<String> listOldSolveHistory = [];
+
+  // add oldSolve
+  void _addOldSoloveHistory(String value) {
+    for (var i = 0; i < this.listHistoryInjection.length; i++) {
+      if (this.listOldSolveHistory[i] == "none") {
+        this.listOldSolveHistory[i] = value;
+        break;
+      }
+    }
+  }
 
   // get length listHistoryInjection
   int lengthListHistoryInjection() => this.listHistoryInjection.length;
@@ -519,6 +541,7 @@ class Medical {
       listHistoryInjection.add(-1);
       listHistoryTimeInjection.add("Phương án không tiêm Insulin");
     }
+    this.listOldSolveHistory.add("");
   }
 
   // add itemList History
@@ -531,7 +554,8 @@ class Medical {
     List<String> listDH = s.split(' ');
     List<String> listDDMMYY = listDH[0].split('-');
     String result =
-        "${listDH[1]}   ${listDDMMYY[2]}/${listDDMMYY[1]}/${listDDMMYY[0]}";
+        "${listDH[1]} - ${listDDMMYY[2]}/${listDDMMYY[1]}/${listDDMMYY[0]}";
     this.listHistoryTimeInjection.add(result);
+    this.listOldSolveHistory.add("none");
   }
 }

@@ -69,7 +69,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "timeNext": medicalObject.timeNext,
         "isVisibleWeight": medicalObject.isVisibleWeight,
         "timeNextDay": medicalObject.timeNextDay,
-        "listHistoryInjection": medicalObject.listHistoryInjection,
+        "listOldSolveHistory": medicalObject.listOldSolveHistory,
         "blockStateIitial": medicalObject.blockStateIitial,
         "checkBreak": medicalObject.checkBreak,
         //  "address": {"line1": "100 Mountain View"}

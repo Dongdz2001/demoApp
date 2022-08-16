@@ -330,8 +330,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                                 : false;
                                                         if (medicalObject
                                                             .checkValidMeasuringTimeFocus()) {
-                                                          // print(
-                                                          //     "here jump neff! ${medicalObject.checkValidMeasuringTimeFocus()} ");
+                                                          print(
+                                                              "here jump neff! ${medicalObject.checkValidMeasuringTimeFocus()} ");
                                                           medicalObject
                                                               .setChangeVisibleGlucose(); // true
                                                           medicalObject
@@ -714,7 +714,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   // xử lý logic
   Future<void> _logicStateInfomation(String value) async {
     medicalObject
-        .addItemListResultInjectionItem(value); // lưa kết quả đo Glucose
+        .addItemListResultInjectionItem(value); // add data  list  kết quả đo
+    medicalObject.addItemListHistory(value); // add data to history
     if (medicalObject.getCountInject() >= 4 &&
         medicalObject.getCheckPassInjection() == 0) {
       // chuyển đổi phương án
@@ -725,8 +726,10 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         medicalObject.setLastStateBool = true; //  chuyển phương án cuối
       }
 
-      // add data vào list history và xóa lịch sử đo
-      medicalObject.addDatatoListHistoryInjection();
+      //  xóa lịch sử đo
+      medicalObject.resetInjectionValueDefault();
+      // add label vào list history
+      medicalObject.addLabelDatatoListHistoryFailed();
       // kiểm tra xem có thất bại lúc 22h không để chờ 1 ngày
       if (getCheckOpenCloseTimeStatus('22:00', '22:30')) {
         medicalObject.updateTimeNextDay();

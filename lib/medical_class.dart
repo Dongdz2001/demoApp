@@ -209,7 +209,7 @@ class Medical {
   }
 
   // Reset value default;
-  void _resetInjectionValueDefault() {
+  void resetInjectionValueDefault() {
     for (var i = 0; i < 8; i++) {
       this._listResultInjection[i] = -1;
       this._listTimeResultInjection[i] = "none";
@@ -218,7 +218,7 @@ class Medical {
 
   // reset all value
   void resetAllvalueIinitialStatedefaut() {
-    _resetInjectionValueDefault();
+    resetInjectionValueDefault();
     this.listHistoryInjection = [];
     this.listHistoryTimeInjection = [];
     this.timeStart = DateTime.now().toString().substring(0, 16);
@@ -389,14 +389,16 @@ class Medical {
         this.yInsu22H = value["yInsu22H"];
         this.oldDisplayContent = value["oldDisplayContent"];
         this.flagRestart = value["flagRestart"] ?? false;
-        this.listHistoryInjection =
-            (value["listHistoryInjection"] as List<dynamic>)
-                .map((e) => (e as int).toDouble())
-                .toList();
-        this.setListTimeResultInjection =
-            (value["listHistoryTimeInjection"] as List<dynamic>)
-                .map((e) => e.toString())
-                .toList();
+        if (value["listHistoryInjection"] != null) {
+          this.listHistoryInjection =
+              (value["listHistoryInjection"] as List<dynamic>)
+                  .map((e) => (e as int).toDouble())
+                  .toList();
+          this.setListTimeResultInjection =
+              (value["listHistoryTimeInjection"] as List<dynamic>)
+                  .map((e) => e.toString())
+                  .toList();
+        }
 
         // restart status
         this.flagRestart
@@ -505,7 +507,7 @@ class Medical {
   int lengthListHistoryInjection() => this.listHistoryInjection.length;
 
   // add data form listInject to history  Inject
-  void addDatatoListHistoryInjection() {
+  void addLabelDatatoListHistoryFailed() {
     if (this._lastStateBool) {
       listHistoryInjection.add(-3);
       listHistoryTimeInjection.add("Phương án tăng liều LANTUS 2UI");
@@ -517,8 +519,19 @@ class Medical {
       listHistoryInjection.add(-1);
       listHistoryTimeInjection.add("Phương án không tiêm Insulin");
     }
-    listHistoryInjection.addAll(this._getListResultInjectValidValue());
-    listHistoryTimeInjection.addAll(this._getListResultInjectTimeValidValue());
-    this._resetInjectionValueDefault();
+  }
+
+  // add itemList History
+  void addItemListHistory(String value) {
+    if (this.listHistoryInjection.length == 0) {
+      this.addLabelDatatoListHistoryFailed();
+    }
+    this.listHistoryInjection.add(double.parse(value));
+    String s = DateTime.now().toString().substring(0, 16);
+    List<String> listDH = s.split(' ');
+    List<String> listDDMMYY = listDH[0].split('-');
+    String result =
+        "${listDH[1]}   ${listDDMMYY[2]}/${listDDMMYY[1]}/${listDDMMYY[0]}";
+    this.listHistoryTimeInjection.add(result);
   }
 }

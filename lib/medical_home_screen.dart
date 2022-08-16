@@ -70,6 +70,8 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "isVisibleWeight": medicalObject.isVisibleWeight,
         "timeNextDay": medicalObject.timeNextDay,
         "listHistoryInjection": medicalObject.listHistoryInjection,
+        "blockStateIitial": medicalObject.blockStateIitial,
+        "checkBreak": medicalObject.checkBreak,
         //  "address": {"line1": "100 Mountain View"}
       });
     }
@@ -702,73 +704,92 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
   Future<void> _logicStateInfomation(String value) async {
     medicalObject
         .addItemListResultInjectionItem(value); // add data  list  kết quả đo
-    if (medicalObject.getCountInject() >= 4 &&
-        medicalObject.getCheckPassInjection() == 0) {
-      // chuyển đổi phương án
-      if (medicalObject.getInitialStateBool) {
-        medicalObject.setInitialStateBool =
-            false; // chuyển từ ko tiêm Insulin sang tiêm Insulin
+    if (medicalObject.getCountInject() >= 4) {
+      if (medicalObject.getCheckPassInjection() == 0) {
+        // chuyển đổi phương án
+        if (medicalObject.getInitialStateBool) {
+          medicalObject.setInitialStateBool =
+              false; // chuyển từ ko tiêm Insulin sang tiêm Insulin
+        } else if (!medicalObject.getLastStateBool) {
+          medicalObject.setLastStateBool = true; //  chuyển phương án cuối
+        } else {
+          // kết thúc phác đồ
+          setState(() {
+            medicalObject.checkBreak = true;
+            medicalObject.setContentdisplay =
+                "Phác đồ này không khả dụng nữa, hãy sử dụng một phác đô khác hiệu quả hơn";
+            medicalObject.setChangeVisibleGlucose(); // ân nhaập glucose
+          });
+        }
+        if (!medicalObject.checkBreak) {
+          //  xóa lịch sử đo
+          medicalObject.resetInjectionValueDefault();
+          // add label vào list history
+          medicalObject.addLabelDatatoListHistoryFailed();
+          // kiểm tra xem có thất bại lúc 22h không để chờ 1 ngày
+          if (getCheckOpenCloseTimeStatus('22:00', '22:30')) {
+            medicalObject.updateTimeNextDay();
+            medicalObject.setContentdisplay =
+                "Bạn phải đợi đến 22h ( ${medicalObject.timeNextDay} ) để đo đường máu mao mạch";
+            medicalObject
+                .setChangeVisibleButtonNext(); // hiện lại nút next // = flase
+            medicalObject
+                .setChangeVisibleGlucose(); // ẩn thanh nhập glucose // = false
+            medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập =true
+          } else {
+            medicalObject.addItemListHistory(value);
+          }
+        }
+      } else if (medicalObject.getCheckPassInjection() == 1) {
+        medicalObject.resetInjectionValueDefault();
       } else {
-        medicalObject.setLastStateBool = true; //  chuyển phương án cuối
-      }
-
-      //  xóa lịch sử đo
-      medicalObject.resetInjectionValueDefault();
-      // add label vào list history
-      medicalObject.addLabelDatatoListHistoryFailed();
-      // kiểm tra xem có thất bại lúc 22h không để chờ 1 ngày
-      if (getCheckOpenCloseTimeStatus('22:00', '22:30')) {
-        medicalObject.updateTimeNextDay();
-        medicalObject.setContentdisplay =
-            "Bạn phải đợi đến 22h ( ${medicalObject.timeNextDay} ) để đo đường máu mao mạch";
-        medicalObject
-            .setChangeVisibleButtonNext(); // hiện lại nút next // = flase
-        medicalObject
-            .setChangeVisibleGlucose(); // ẩn thanh nhập glucose // = false
-        medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập =true
-      } else {
-        medicalObject.addItemListHistory(value);
+        medicalObject.addItemListHistory(value); // add data to history
       }
     } else {
       medicalObject.addItemListHistory(value); // add data to history
     }
-    // kiểm tra xem đúng  ngày không
-    if (medicalObject.checkTimeNextDay()) {
-      // Hiển thị phác độ theo giờ
-      if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
-          medicalObject.getInitialStateBool) {
-        setState(() {
-          // double.parse(value.toString())
 
-          medicalObject
-              .setChangeCheckCurrentGlucose(); // nhập xong hiện phác đồ // = flase
-          if (!medicalObject.isVisibleButtonNext)
+    // check dừng phác đô
+    if (!medicalObject.checkBreak) {
+      // kiểm tra xem đúng  ngày không
+      if (medicalObject.checkTimeNextDay()) {
+        // Hiển thị phác độ theo giờ
+        if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
+            medicalObject.getInitialStateBool) {
+          setState(() {
+            // double.parse(value.toString())
+
             medicalObject
-                .setChangeVisibleButtonNext(); // hiện lại nút next // flase
-          medicalObject
-              .setChangeVisibleGlucose(); //  ẩn thanh nhập Glucose // flase
-          medicalObject.setChangeStatus(); // thay đổi trạng thái
-          medicalObject.setChangeCheckDoneTask(); // đã hiện phác đồ // true
-          medicalObject.timeNextValid();
-          print("timeNext = ${medicalObject.timeNext}");
-        });
-      } else {
-        setState(() {
-          medicalObject
-              .setChangeVisibleGlucose(); // ẩn thanh nhập Glucose = false
-          medicalObject
-              .setChangeVisibleWeight(); // hiện thanh nhập Cân nặng = True
-          medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập = false
+                .setChangeCheckCurrentGlucose(); // nhập xong hiện phác đồ // = flase
+            if (!medicalObject.isVisibleButtonNext)
+              medicalObject
+                  .setChangeVisibleButtonNext(); // hiện lại nút next // flase
+            medicalObject
+                .setChangeVisibleGlucose(); //  ẩn thanh nhập Glucose // flase
+            medicalObject.setChangeStatus(); // thay đổi trạng thái
+            medicalObject.setChangeCheckDoneTask(); // đã hiện phác đồ // true
+            medicalObject.timeNextValid();
+            print("timeNext = ${medicalObject.timeNext}");
+          });
+        } else {
+          setState(() {
+            medicalObject
+                .setChangeVisibleGlucose(); // ẩn thanh nhập Glucose = false
+            medicalObject
+                .setChangeVisibleWeight(); // hiện thanh nhập Cân nặng = True
+            medicalObject
+                .setChangeCheckCurrentGlucose(); // qua bước nhập = false
 
-          medicalObject.setChangeStatus(); // thay đổi trạng thái
-        });
+            medicalObject.setChangeStatus(); // thay đổi trạng thái
+          });
+        }
       }
+      Future.delayed(
+          const Duration(seconds: 1),
+          (() => showToast(
+              "Lượng Glucose $value ${medicalObject.getCheckGlucozo(double.parse(value.toString())) == 0 ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
+              duration: 3,
+              gravity: Toast.bottom)));
     }
-    Future.delayed(
-        const Duration(seconds: 1),
-        (() => showToast(
-            "Lượng Glucose $value ${medicalObject.getCheckGlucozo(double.parse(value.toString())) == 0 ? "đạt mục tiêu" : "KHÔNG đạt mục tiêu"} ",
-            duration: 3,
-            gravity: Toast.bottom)));
   }
 }

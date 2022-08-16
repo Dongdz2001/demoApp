@@ -225,8 +225,10 @@ class Medical {
     this.timeStart = DateTime.now().toString().substring(0, 16);
     this.setYInsu22H(0.2);
 
+    //  dừng phác đô lại
+    this.checkBreak = false;
     // blockState ve trang thai ban dau
-    _blockStateIitial = false;
+    blockStateIitial = false;
     // Reset time hiện tại
     String timeNextDay = DateFormat('dd-MM-yyyy').format(DateTime.now());
     // ẩn hiện thanh nhập cân nặng
@@ -264,15 +266,15 @@ class Medical {
     return -1; // chưa xác định
   }
 
-  bool _blockStateIitial = false;
+  bool blockStateIitial = false;
 
   // Thiết lập trạng thái state  thay đổi
   void setChangeStatus() {
     if (!this.checkCurrentGlucose) {
       this._content_display = "";
-      if (_initialStateBool || _blockStateIitial) {
+      if (_initialStateBool || blockStateIitial) {
         this._content_display = "${nInsulinAllTime} \n";
-        _blockStateIitial = true;
+        blockStateIitial = true;
       }
       if (getCheckOpenCloseTimeStatus("6:00", "6:30")) {
         if (this.checkDoneTask) {
@@ -317,15 +319,14 @@ class Medical {
           if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
             this._setSloveFailedContext(2);
             this._content_display += this.sloveFailedContext;
-            this._addOldSoloveHistory(this._content_display);
           } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
             this._setSloveFailedContext(4);
             this._content_display += this.sloveFailedContext;
-            this._addOldSoloveHistory(this._content_display);
           } else {
             this._content_display =
                 "Bạn phải đợi đến 22h để đo đường máu mao mạch";
           }
+          this._addOldSoloveHistory(this._content_display);
         }
       } else if (getCheckOpenCloseTimeStatus("18:31", "21:59")) {
         this._content_display = "Bạn phải đợi đến 22h để đo đường máu mao mạch";
@@ -373,6 +374,8 @@ class Medical {
         var value = Map<String, dynamic>.from(snapshot.value as Map);
 
         // get value from firebase
+        this.checkBreak = value["checkBreak"];
+        this.blockStateIitial = value["blockStateIitial"];
         this.timeNextDay = value["timeNextDay"];
         this.isVisibleWeight = value["isVisibleWeight"];
         this.timeNext = value["timeNext"];
@@ -405,6 +408,8 @@ class Medical {
               (value["listHistoryTimeInjection"] as List<dynamic>)
                   .map((e) => e.toString())
                   .toList();
+        }
+        if (value["listOldSolveHistory"] != null) {
           this.listOldSolveHistory =
               (value["listOldSolveHistory"] as List<dynamic>)
                   .map((e) => e.toString())
@@ -510,9 +515,11 @@ class Medical {
 
   // check time hiện tại  có bằng  timeNextDay hay không;
   bool checkTimeNextDay() => this.gettimeCurentDay() == timeNextDay;
-  // List trạng thái theo dõi phác đồ
+  // List kết quả đo glucose
   List<double> listHistoryInjection = [];
+  // List time mỗi lần đo
   List<String> listHistoryTimeInjection = [];
+  // List trạng thái theo dõi phác đồ
   List<String> listOldSolveHistory = [];
 
   // add oldSolve
@@ -528,7 +535,7 @@ class Medical {
   // get length listHistoryInjection
   int lengthListHistoryInjection() => this.listHistoryInjection.length;
 
-  // add data form listInject to history  Inject
+  // gán nhãn khi chuyển phương án điều trị
   void addLabelDatatoListHistoryFailed() {
     if (this._lastStateBool) {
       listHistoryInjection.add(-3);
@@ -558,4 +565,7 @@ class Medical {
     this.listHistoryTimeInjection.add(result);
     this.listOldSolveHistory.add("none");
   }
+
+  // dừng phương án điều trị khi không khả dụng nữa
+  bool checkBreak = false;
 }

@@ -34,6 +34,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    medicalObject.timeNextCurrentValid();
   }
 
   // sava data when close app
@@ -378,6 +379,12 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                             visible: medicalObject.isVisibleButtonNext,
                             child: ElevatedButton(
                                 onPressed: () {
+                                  //  update time TimeNextDay  trước khi tiến hành
+                                  if (medicalObject.checkSmallerTimeNextDay()) {
+                                    medicalObject.timeNextDay =
+                                        DateFormat('dd-MM-yyyy').format(
+                                            DateTime.now()); // update time day
+                                  }
                                   if (medicalObject.checkTimeNextDay()) {
                                     if (medicalObject
                                         .checkValidMeasuringTimeFocus()) {
@@ -393,16 +400,12 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                 .setChangeVisibleGlucose(); // hiện nhập glucose
                                             medicalObject
                                                 .setChangeCheckCurrentGlucose(); // đã tới bước nhập glucose
-                                            medicalObject.timeNextValid();
                                             print("Time tiep theo:" +
                                                 medicalObject.timeNext);
                                           });
                                         } else {
-                                          List<String> listTimeTemp =
-                                              medicalObject.timeNext.split('_');
-                                          if (getCheckOpenCloseTimeStatus(
-                                              listTimeTemp[0],
-                                              listTimeTemp[1])) {
+                                          // kiểm tra time next hợp lệ không
+                                          if (medicalObject.checkTimeNext()) {
                                             medicalObject.checkDoneTask = false;
                                             medicalObject
                                                 .setChangeVisibleButtonNext(); // ẩn nút // = false
@@ -426,9 +429,18 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                       showToast("Chưa đến giờ đo",
                                           duration: 3, gravity: Toast.bottom);
                                     }
-                                    setState(() {
-                                      medicalObject.setChangeStatus();
-                                    });
+                                    if (medicalObject.getContentdisplay !=
+                                        medicalObject.delaySolution1DayAt22h) {
+                                      setState(() {
+                                        medicalObject.setChangeStatus();
+                                      });
+                                    } else {
+                                      if (medicalObject.checkTimeNext()) {
+                                        setState(() {
+                                          medicalObject.setChangeStatus();
+                                        });
+                                      }
+                                    }
                                   } else {
                                     showToast("Chưa đến giờ đo ",
                                         duration: 3, gravity: Toast.bottom);
@@ -729,13 +741,15 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
           // kiểm tra xem có thất bại lúc 22h không để chờ 1 ngày
           if (getCheckOpenCloseTimeStatus('22:00', '22:30')) {
             medicalObject.updateTimeNextDay();
-            medicalObject.setContentdisplay =
-                "Bạn phải đợi đến 22h ( ${medicalObject.timeNextDay} ) để đo đường máu mao mạch";
+            medicalObject.setDelaySolution1DayAt22h();
             medicalObject
                 .setChangeVisibleButtonNext(); // hiện lại nút next // = flase
             medicalObject
                 .setChangeVisibleGlucose(); // ẩn thanh nhập glucose // = false
             medicalObject.setChangeCheckCurrentGlucose(); // qua bước nhập =true
+            medicalObject
+                .setChangeCheckDoneTask(); // đã hiển thị phương án // true
+            medicalObject.timeNext = '22:00_22:30';
           } else {
             medicalObject.addItemListHistory(value);
           }
@@ -752,7 +766,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
     // check dừng phác đô
     if (!medicalObject.checkBreak) {
       // kiểm tra xem đúng  ngày không
-      if (medicalObject.checkTimeNextDay()) {
+      if (medicalObject.checkTimeNextDay() && medicalObject.checkTimeNext()) {
         // Hiển thị phác độ theo giờ
         if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
             medicalObject.getInitialStateBool) {
@@ -773,6 +787,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
           });
         } else {
           setState(() {
+            medicalObject.timeNextValid();
             medicalObject
                 .setChangeVisibleGlucose(); // ẩn thanh nhập Glucose = false
             medicalObject

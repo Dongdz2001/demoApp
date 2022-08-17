@@ -10,6 +10,16 @@ import 'dart:async';
 class Medical {
   // đo lượng đường trong  máu và nhập lại kết quả xuống bên dưới
 
+  // delay solve
+  String delaySolution1DayAt22h =
+      "Bạn phải đợi đến 22h ( 15-08-2022 ) để đo đường máu mao mạch";
+  void setDelaySolution1DayAt22h() {
+    this.delaySolution1DayAt22h =
+        "Bạn phải đợi đến 22h ( ${this.timeNextDay} ) để đo đường máu mao mạch";
+    this._content_display =
+        "Bạn phải đợi đến 22h ( ${this.timeNextDay} ) để đo đường máu mao mạch";
+  }
+
   // nội dung chung cho cả 2 phương án đầu tiên
   String glucose_infusion_6H12H22H = """ 
 -	 Truyền glucose 10% 500ml pha truyền 10UI Actrapid (1 chai, tốc độ 100ml/h) 
@@ -224,6 +234,8 @@ class Medical {
     this.listOldSolveHistory = [];
     this.timeStart = DateTime.now().toString().substring(0, 16);
     this.setYInsu22H(0.2);
+    this.timeNextCurrentValid();
+    print("time == ${this.timeNext}");
 
     //  dừng phác đô lại
     this.checkBreak = false;
@@ -247,7 +259,7 @@ class Medical {
     this.isVisibleButtonNext = false;
     // kiểm tra xem đẫ qua bước nhập glucose hiện tại hay chưa
     this.checkCurrentGlucose = false;
-
+    // timeNext defalut
     this._content_display = "Bạn có đang tiêm Insulin không :  ";
   }
 
@@ -334,6 +346,8 @@ class Medical {
         if (this.checkDoneTask) {
           this._content_display =
               "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch";
+          this.timeNextDay = DateFormat('dd-MM-yyyy')
+              .format(DateTime.now()); // update time day
         } else {
           if (this.isVisibleWeight) {
             this._content_display = "Nhập cân nặng hiện tại (Kg)";
@@ -420,6 +434,8 @@ class Medical {
         this.flagRestart
             ? this._content_display = "Bạn có đang tiêm Insulin không :  "
             : setChangeStatus();
+        // default timeNext
+        this.timeNextCurrentValid();
       }
       return "done";
     });
@@ -469,15 +485,28 @@ class Medical {
   String timeNext = '6:00_6:30';
 
   //in ra khoảng thời gian hợp lệ hiện tại
-  void timeCurrentValid() {
-    if (getCheckOpenCloseTimeStatus('6:00', '6:30')) {
-      this.timeNext = '6:00_6:30';
-    } else if (getCheckOpenCloseTimeStatus('12:00', '12:30')) {
+  void timeNextCurrentValid() {
+    if (getCheckOpenCloseTimeStatus('6:31', '12:30')) {
       this.timeNext = '12:00_12:30';
-    } else if (getCheckOpenCloseTimeStatus('18:00', '18:30')) {
+    } else if (getCheckOpenCloseTimeStatus('12:31', '18:30')) {
       this.timeNext = '18:00_18:30';
-    } else {
+    } else if (getCheckOpenCloseTimeStatus('18:31', '22:30')) {
       this.timeNext = '22:00_22:30';
+    } else {
+      this.timeNext = '6:00_6:30';
+    }
+  }
+
+  // get timeCurrent
+  String getTimeNextCurrentValid() {
+    if (getCheckOpenCloseTimeStatus('6:31', '12:30')) {
+      return '12:00_12:30';
+    } else if (getCheckOpenCloseTimeStatus('12:31', '18:30')) {
+      return '18:00_18:30';
+    } else if (getCheckOpenCloseTimeStatus('18:31', '22:30')) {
+      return '22:00_22:30';
+    } else {
+      return '6:00_6:30';
     }
   }
 
@@ -492,6 +521,28 @@ class Medical {
     } else {
       this.timeNext = '6:00_6:30';
     }
+  }
+
+  // get TimeNext
+  String getTimeNextValid() {
+    if (getCheckOpenCloseTimeStatus('6:00', '6:30')) {
+      return '12:00_12:30';
+    } else if (getCheckOpenCloseTimeStatus('12:00', '12:30')) {
+      return '18:00_18:30';
+    } else if (getCheckOpenCloseTimeStatus('18:00', '18:30')) {
+      return '22:00_22:30';
+    } else {
+      return '6:00_6:30';
+    }
+  }
+
+  // check TimeNext in a day
+  bool checkTimeNext() {
+    print("timeNext ${this.timeNext}");
+    List<String> listTimeTemp = this.timeNext.split('_');
+    if (getCheckOpenCloseTimeStatus(listTimeTemp[0], listTimeTemp[1]))
+      return true;
+    return false;
   }
 
   // Hiện đo cân nặng
@@ -513,8 +564,30 @@ class Medical {
     timeNextDay = formatted_tomorrow;
   } //  15-08-2022
 
+  // kiểm tra xem timeNextDay < curentDay hay không
+  bool checkSmallerTimeNextDay() {
+    List<String> listTimeTemp = this.timeNextDay.split('-');
+    DateTime now = DateTime.now();
+    if (int.parse(listTimeTemp[2]) < now.year) {
+      print("year= ${int.parse(listTimeTemp[2])}");
+      return true;
+    } else if (int.parse(listTimeTemp[1]) < now.month) {
+      print("month= ${int.parse(listTimeTemp[1])}");
+      return true;
+    } else if (int.parse(listTimeTemp[0]) < now.day) {
+      print("day= ${int.parse(listTimeTemp[0])}");
+      return true;
+    }
+    print("all= ${listTimeTemp}");
+    return false;
+  }
+
   // check time hiện tại  có bằng  timeNextDay hay không;
-  bool checkTimeNextDay() => this.gettimeCurentDay() == timeNextDay;
+  bool checkTimeNextDay() {
+    print(timeNextDay);
+    return this.gettimeCurentDay() == timeNextDay;
+  }
+
   // List kết quả đo glucose
   List<double> listHistoryInjection = [];
   // List time mỗi lần đo

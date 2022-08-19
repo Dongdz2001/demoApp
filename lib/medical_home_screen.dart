@@ -807,4 +807,23 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
               gravity: Toast.bottom)));
     }
   }
+
+  // callback when change infomation
+//   Future<void> _navigateAndDisplaySelection(BuildContext context) async {
+//     // Navigator.push returns a Future that completes after calling
+//     // Navigator.pop on the Selection Screen.
+//     final result = await Navigator.push(
+//       context,
+//       // Create the SelectionScreen in the next step.
+//       MaterialPageRoute(
+//           builder: (context) => ProfileInfo(patienTemp: widget.patienTemp)),
+//     );
+//     try {
+//       if (result) {
+//         setState(() {});
+//       }
+//     } catch (e) {
+//       print("null pop error");
+//     }
+//   }
 }

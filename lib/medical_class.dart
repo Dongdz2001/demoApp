@@ -197,10 +197,10 @@ class Medical {
           this._listResultInjection[i] <= 8.3)
       ? true
       : false;
-  // lấy ra kết quả lần thất bại cuối cùng
+  // lấy ra kết quả cuối cùng
   double getLastFaildedResultValue() {
     for (int i = 7; i >= 0; i--) {
-      if (!getCheckGlucozoIndex(i) && this._listResultInjection[i] != -1)
+      if (this._listResultInjection[i] != -1)
         return this._listResultInjection[i];
     }
     return -1;
@@ -282,82 +282,19 @@ class Medical {
 
   // Thiết lập trạng thái state  thay đổi
   void setChangeStatus() {
-    if (!this.checkCurrentGlucose) {
-      this._content_display = "";
-      if (_initialStateBool || blockStateIitial) {
-        this._content_display = "${nInsulinAllTime} \n";
-        blockStateIitial = true;
-      }
-      if (getCheckOpenCloseTimeStatus("6:00", "6:30")) {
-        if (this.checkDoneTask) {
-          this._content_display =
-              "Bạn phải đợi đến 12h để đo đường máu mao mạch";
-        } else {
-          this._content_display += " ${glucose_infusion_6H12H22H} ";
-          if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
-            this._setSloveFailedContext(2);
-            this._content_display += this.sloveFailedContext;
-          } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
-            this._setSloveFailedContext(4);
-            this._content_display += this.sloveFailedContext;
-          }
-          this._addOldSoloveHistory(this._content_display);
+    if (!checkBreak) {
+      if (!this.checkCurrentGlucose) {
+        this._content_display = "";
+        if (_initialStateBool || blockStateIitial) {
+          this._content_display = "${nInsulinAllTime} \n";
+          blockStateIitial = true;
         }
-      } else if (getCheckOpenCloseTimeStatus("6:31", "11:59")) {
-        this._content_display =
-            "Bạn phải đợi đến 12h  để đo đường máu mao mạch";
-      } else if (getCheckOpenCloseTimeStatus("12:00", "12:30")) {
-        if (this.checkDoneTask) {
-          this._content_display =
-              "Bạn phải đợi đến 18h để đo đường máu mao mạch";
-        } else {
-          this._content_display += "${glucose_infusion_6H12H22H}";
-          if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
-            this._setSloveFailedContext(2);
-            this._content_display += this.sloveFailedContext;
-          } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
-            this._setSloveFailedContext(4);
-            this._content_display += this.sloveFailedContext;
-          }
-          this._addOldSoloveHistory(this._content_display);
-        }
-      } else if (getCheckOpenCloseTimeStatus("12:31", "17:59")) {
-        this._content_display = "Bạn phải đợi đến 18h để đo đường máu mao mạch";
-      } else if (getCheckOpenCloseTimeStatus("18:00", "18:30")) {
-        if (this.checkDoneTask) {
-          this._content_display =
-              "Bạn phải đợi đến 22h để đo đường máu mao mạch";
-        } else {
-          if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
-            this._setSloveFailedContext(2);
-            this._content_display += this.sloveFailedContext;
-          } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
-            this._setSloveFailedContext(4);
-            this._content_display += this.sloveFailedContext;
-          } else {
+        if (getCheckOpenCloseTimeStatus("6:00", "6:30")) {
+          if (this.checkDoneTask) {
             this._content_display =
-                "Bạn phải đợi đến 22h để đo đường máu mao mạch";
-          }
-          this._addOldSoloveHistory(this._content_display);
-        }
-      } else if (getCheckOpenCloseTimeStatus("18:31", "21:59")) {
-        this._content_display = "Bạn phải đợi đến 22h để đo đường máu mao mạch";
-      } else if (getCheckOpenCloseTimeStatus("22:00", "22:30")) {
-        if (this.checkDoneTask) {
-          this._content_display =
-              "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch";
-          this.timeNextDay = DateFormat('dd-MM-yyyy')
-              .format(DateTime.now()); // update time day
-        } else {
-          if (this.isVisibleWeight) {
-            this._content_display = "Nhập cân nặng hiện tại (Kg)";
+                "Bạn phải đợi đến 12h để đo đường máu mao mạch";
           } else {
-            if (!_initialStateBool) {
-              this._content_display +=
-                  " ${glucose_infusion_6H12H22H} ${yInsu22H}";
-            } else {
-              this._content_display += " ${glucose_infusion_6H12H22H}";
-            }
+            this._content_display += " ${glucose_infusion_6H12H22H} ";
             if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
               this._setSloveFailedContext(2);
               this._content_display += this.sloveFailedContext;
@@ -367,13 +304,84 @@ class Medical {
             }
             this._addOldSoloveHistory(this._content_display);
           }
+        } else if (getCheckOpenCloseTimeStatus("6:31", "11:59")) {
+          this._content_display =
+              "Bạn phải đợi đến 12h  để đo đường máu mao mạch";
+        } else if (getCheckOpenCloseTimeStatus("12:00", "12:30")) {
+          if (this.checkDoneTask) {
+            this._content_display =
+                "Bạn phải đợi đến 18h để đo đường máu mao mạch";
+          } else {
+            this._content_display += "${glucose_infusion_6H12H22H}";
+            if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
+              this._setSloveFailedContext(2);
+              this._content_display += this.sloveFailedContext;
+            } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
+              this._setSloveFailedContext(4);
+              this._content_display += this.sloveFailedContext;
+            }
+            this._addOldSoloveHistory(this._content_display);
+          }
+        } else if (getCheckOpenCloseTimeStatus("12:31", "17:59")) {
+          this._content_display =
+              "Bạn phải đợi đến 18h để đo đường máu mao mạch";
+        } else if (getCheckOpenCloseTimeStatus("18:00", "18:30")) {
+          if (this.checkDoneTask) {
+            this._content_display =
+                "Bạn phải đợi đến 22h để đo đường máu mao mạch";
+          } else {
+            if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
+              this._setSloveFailedContext(2);
+              this._content_display += this.sloveFailedContext;
+            } else if (getCheckGlucozo(this.getLastFaildedResultValue()) == 2) {
+              this._setSloveFailedContext(4);
+              this._content_display += this.sloveFailedContext;
+            } else {
+              this._content_display =
+                  "Bạn phải đợi đến 22h để đo đường máu mao mạch";
+            }
+            this._addOldSoloveHistory(this._content_display);
+          }
+        } else if (getCheckOpenCloseTimeStatus("18:31", "21:59")) {
+          this._content_display =
+              "Bạn phải đợi đến 22h để đo đường máu mao mạch";
+        } else if (getCheckOpenCloseTimeStatus("22:00", "22:30")) {
+          if (this.checkDoneTask) {
+            this._content_display =
+                "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch";
+            this.timeNextDay = DateFormat('dd-MM-yyyy')
+                .format(DateTime.now()); // update time day
+          } else {
+            if (this.isVisibleWeight) {
+              this._content_display = "Nhập cân nặng hiện tại (Kg)";
+            } else {
+              if (!_initialStateBool) {
+                this._content_display +=
+                    " ${glucose_infusion_6H12H22H} ${yInsu22H}";
+              } else {
+                this._content_display += " ${glucose_infusion_6H12H22H}";
+              }
+              if (getCheckGlucozo(this.getLastFaildedResultValue()) == 1) {
+                this._setSloveFailedContext(2);
+                this._content_display += this.sloveFailedContext;
+              } else if (getCheckGlucozo(this.getLastFaildedResultValue()) ==
+                  2) {
+                this._setSloveFailedContext(4);
+                this._content_display += this.sloveFailedContext;
+              }
+              this._addOldSoloveHistory(this._content_display);
+            }
+          }
+        } else {
+          this._content_display =
+              "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch ";
         }
       } else {
-        this._content_display =
-            "Bạn phải đợi đến 6h sáng để đo đường máu mao mạch ";
+        this._content_display = "Theo dõi đường máu mao mạch";
       }
     } else {
-      this._content_display = "Theo dõi đường máu mao mạch";
+      this._content_display =
+          "Phác đồ này không khả dụng nữa, hãy sử dụng một phác đô khác hiệu quả hơn";
     }
   }
 
@@ -641,4 +649,35 @@ class Medical {
 
   // dừng phương án điều trị khi không khả dụng nữa
   bool checkBreak = false;
+
+  // save data on Firebase
+  Future<void> saveData(String s) async {
+    final reference = FirebaseDatabase.instance.ref(s);
+    await reference.set({
+      "namePD": this.getNamePD,
+      "initialStateBool": this.getInitialStateBool,
+      "lastStateBool": this.getLastStateBool,
+      "listResultInjection": this.getListResultInjection,
+      "listTimeResultInjection": this.getListTimeResultInjection,
+      "listHistoryInjection": this.listHistoryInjection,
+      "listHistoryTimeInjection": this.listHistoryTimeInjection,
+      "isVisibleGlucose": this.isVisibleGlucose,
+      "isVisibleYesNoo": this.isVisibleYesNoo,
+      "timeStart": this.getTimeStart.toString(),
+      "sloveFailedContext": this.getSloveFailedContext,
+      "yInsu22H": this.getYInsu22H,
+      "flagRestart": this.flagRestart,
+      "isVisibleButtonNext": this.isVisibleButtonNext,
+      "checkCurrentGlucose": this.checkCurrentGlucose,
+      "checkCurrentGlucose": this.checkCurrentGlucose,
+      "checkDoneTask": this.checkDoneTask,
+      "timeNext": this.timeNext,
+      "isVisibleWeight": this.isVisibleWeight,
+      "timeNextDay": this.timeNextDay,
+      "listOldSolveHistory": this.listOldSolveHistory,
+      "blockStateIitial": this.blockStateIitial,
+      "checkBreak": this.checkBreak,
+      //  "address": {"line1": "100 Mountain View"}
+    });
+  }
 }

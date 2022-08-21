@@ -235,7 +235,7 @@ class Medical {
     this.timeStart = DateTime.now().toString().substring(0, 16);
     this.setYInsu22H(0.2);
     this.timeNextCurrentValid();
-    print("time == ${this.timeNext}");
+    print("timeNext = ${this.timeNext}");
 
     //  dừng phác đô lại
     this.checkBreak = false;

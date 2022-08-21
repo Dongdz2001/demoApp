@@ -332,8 +332,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
                                                                 : false;
                                                         if (medicalObject
                                                             .checkValidMeasuringTimeFocus()) {
-                                                          print(
-                                                              "here jump neff! ${medicalObject.checkValidMeasuringTimeFocus()} ");
                                                           medicalObject
                                                               .setChangeVisibleGlucose(); // true
                                                           medicalObject
@@ -765,11 +763,13 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
 
     // check dừng phác đô
     if (!medicalObject.checkBreak) {
+      print("co nhay hihi ${medicalObject.timeNext}");
       // kiểm tra xem đúng  ngày không
       if (medicalObject.checkTimeNextDay() && medicalObject.checkTimeNext()) {
         // Hiển thị phác độ theo giờ
         if (!getCheckOpenCloseTimeStatus('22:00', '22:30') ||
             medicalObject.getInitialStateBool) {
+          print("co nhay vo day !");
           setState(() {
             // double.parse(value.toString())
 

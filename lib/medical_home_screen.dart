@@ -53,6 +53,7 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "namePD": medicalObject.getNamePD,
         "initialStateBool": medicalObject.getInitialStateBool,
         "lastStateBool": medicalObject.getLastStateBool,
+        "content_display": medicalObject.content_display,
         "listResultInjection": medicalObject.getListResultInjection,
         "listTimeResultInjection": medicalObject.getListTimeResultInjection,
         "listHistoryInjection": medicalObject.listHistoryInjection,
@@ -73,7 +74,6 @@ class _MedicalHomeScreenState extends State<MedicalHomeScreen>
         "listOldSolveHistory": medicalObject.listOldSolveHistory,
         "blockStateIitial": medicalObject.blockStateIitial,
         "checkBreak": medicalObject.checkBreak,
-        //  "address": {"line1": "100 Mountain View"}
       });
     }
   }
